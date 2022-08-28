@@ -1,0 +1,66 @@
+import statistics
+import pandas as pd
+
+titanictrain = pd.read_csv('C:/Users/claud/Downloads/python/titanic/train.csv')
+
+
+titanictrain.isnull().sum()
+
+from sklearn.preprocessing import LabelEncoder
+titanictrain['Sex'] = LabelEncoder().fit_transform(titanictrain['Sex'])
+titanictrain['Embarked'] = LabelEncoder().fit_transform(titanictrain['Embarked'])
+titanictrain['Age'] = titanictrain['Age'].fillna(titanictrain['Age'].mean())
+titanictrain['Embarked'] = titanictrain['Embarked'].fillna(titanictrain['Embarked'].mode()[0])
+
+
+y = titanictrain['Survived']
+x = titanictrain.drop(['Survived', 'Name', 'Ticket', 'Cabin'], axis = 1)
+
+
+from sklearn.model_selection import train_test_split
+x_treino, x_teste, y_treino, y_teste = train_test_split(x, y, test_size = 0.3)
+from sklearn.ensemble import RandomForestClassifier
+modelo = RandomForestClassifier()
+modelo.fit(x_treino, y_treino)
+y_treino = modelo.predict(x_teste)
+resultado = modelo.score(x_teste, y_teste)
+print("Seu modelo teve acuracia de:", resultado)
+
+
+modelopreditivo = pd.read_csv('C:/Users/claud/Downloads/python/titanic/test.csv')
+modelopreditivosemcoluna = modelopreditivo.drop(['Name', 'Ticket', 'Cabin'], axis = 1)
+modelopreditivosemcoluna['Sex'] = LabelEncoder().fit_transform(modelopreditivosemcoluna['Sex'])
+modelopreditivosemcoluna['Embarked'] = LabelEncoder().fit_transform(modelopreditivosemcoluna['Embarked'])
+
+## pra trocar uma categoria só usar o seguinte codigo:
+## modelopreditivosemcoluna['Sex'] = modelopreditivosemcoluna['Sex'].replace('male', 1)
+
+modelopreditivosemcoluna['Age'] = modelopreditivosemcoluna['Age'].fillna(modelopreditivosemcoluna['Age'].mean())
+modelopreditivosemcoluna['Embarked'] = modelopreditivosemcoluna['Embarked'].fillna(modelopreditivosemcoluna['Embarked'].mode()[0])
+modelopreditivosemcoluna['Fare'] = modelopreditivosemcoluna['Fare'].fillna(modelopreditivosemcoluna['Fare'].mode()[0])
+x_teste
+
+modelopreditivosemcoluna['Age'].isnull().values.any()
+modelopreditivosemcoluna['Fare'].isnull().values.any()
+
+modelopreditivosemcoluna['Age'] = modelopreditivosemcoluna['Age'].astype(int)
+modelopreditivosemcoluna['Fare'] = modelopreditivosemcoluna['Fare'].astype(int)
+modelopreditivosemcoluna.dtypes
+
+
+from sklearn.model_selection import train_test_split
+x_treino, x_teste, y_treino, y_teste = train_test_split(x, y, test_size = 0.3)
+from sklearn.ensemble import RandomForestClassifier
+modelo2 = RandomForestClassifier()
+modelo2.fit(x_treino, y_treino)
+previsoes = modelo2.predict(modelopreditivosemcoluna)
+passengerId = modelopreditivosemcoluna['PassengerId']
+submission = pd.DataFrame({"PassengerId": passengerId,
+                           "Survived": previsoes}).set_index('PassengerId')
+submission
+
+
+from pathlib import Path  
+filepath = Path('C:/Users/claud/Downloads/python/titanic/submission_rf.csv')  
+filepath.parent.mkdir(parents=True, exist_ok=True)  
+submission.to_csv(filepath)  
