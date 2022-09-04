@@ -1,4 +1,4 @@
-import statistics
+
 import pandas as pd
 
 titanictrain = pd.read_csv('C:/Users/claud/Downloads/python/titanic/train.csv')
